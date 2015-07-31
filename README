@@ -1,0 +1,13 @@
+Documentation
+
+boxxy_description provides a urdf model for the new volksbot robot with two passive wheels,
+as well as launch files to run the robot and the gazebo simulation.
+
+LAUNCH FILES
+
+boxxy_gazebo_empty_world.launch -> spawns Boxxy in an empty gazebo world
+boxxy_gazebo_avz_world.launch -> spawns Boxxy in gazebo's avz environment
+boxxy.launch -> starts robot drivers
+-The Volksbot driver is working correctly.
+-Uses sick lms100 scanner so the lms100 drivers should work
+

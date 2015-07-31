@@ -1,0 +1,266 @@
+<?xml version="1.0"?>
+
+<robot
+  xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+  xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+  xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+  xmlns:xacro="http://ros.org/wiki/xacro"
+  name="robot_description">
+
+
+
+<!-- inertial measurement unit for gazebo -->
+
+<xacro:include filename="$(find uos_common_urdf)/urdf/imu.gazebo.urdf.xacro" />
+<xacro:property name="imu_stdev" value="0.00017" />
+
+<xacro:imu_gazebo link="base_link" imu_topic="imu" update_rate="100.0" stdev="${imu_stdev}" />
+
+ <!--link name="imu" />
+  <joint name="base_link_to_imu_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="imu" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint-->
+
+<!-- Laser_scan -->
+
+<xacro:include filename="$(find uos_common_urdf)/urdf/sick_lms100.urdf.xacro" />
+<xacro:sick_lms100 laser_link="laser" gazebo_topic="scan" />
+
+<!--link name="laser_scan" /-->
+<joint name="laser_scan_joint" type="fixed">
+    <origin xyz="0.07 0 0.025" rpy="-3.14 0 0" />
+    <parent link="front_surface"/>
+    <child link="laser" />
+  </joint>
+
+
+  <!-- base_footprint is a fictitious link(frame) that is on the ground right below base_link origin,
+       navigation stack depends on this frame -->
+  <link name="base_footprint"/>
+
+  <joint name="base_footprint_joint" type="fixed">
+    <origin xyz="0 0 0.145" rpy="0 0 0"/>
+    <child link="base_link"/>
+    <parent link="base_footprint" />
+  </joint>
+
+<!--Box_Links -->
+
+<xacro:macro name="robot_box" params="name size xyz rpy inertial_mass gazebo_color" >
+    <link name="${name}">
+        <visual>
+        <origin xyz="${xyz}"  rpy="${rpy}"/>
+            <geometry>
+                 <box size="${size}"/>
+            </geometry>
+            <material name="grey">
+                 <color rgba="0.5 0.5 0.5 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="${xyz}"  rpy="${rpy}" />
+            <geometry>
+                 <box size="${size}"/>
+            </geometry>
+        </collision>
+      <inertial>
+      <mass value="${inertial_mass}"/>
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.00000001" ixy="0.0" ixz="0.0"
+                 iyy="0.00000001" iyz="0.0" 
+                 izz="0.00000001" />
+    </inertial>
+    </link>
+  <gazebo reference="${name}">
+   <material value="${gazebo_color}"/>
+  </gazebo>  
+</xacro:macro>
+
+<xacro:robot_box name="base_link"     size="0.39 0.29 0.08" xyz="0 0 0" rpy="0 0 0" inertial_mass="0.4" gazebo_color="Gazebo/Grey"/>
+<xacro:robot_box name="down_box"      size="0.18 0.29 0.06" xyz="0 0 0" rpy="0 0 0" inertial_mass="0.6" gazebo_color="Gazebo/Grey"/>
+<xacro:robot_box name="upper_surface" size="0.43 0.43 0.02" xyz="0 0 0" rpy="0 0 0" inertial_mass="0.2" gazebo_color="Gazebo/Grey"/>
+<xacro:robot_box name="front_surface" size="0.02 0.29 0.14" xyz="0 0 0" rpy="0 0 0" inertial_mass="0.5" gazebo_color="Gazebo/Grey"/>
+<xacro:robot_box name="back_surface"  size="0.02 0.43 0.08" xyz="0 0 0" rpy="0 0 0" inertial_mass="0.5" gazebo_color="Gazebo/Grey"/>
+
+
+
+<!-- Box_joints -->
+
+<xacro:macro name="bjoint" params="type child xyz rpy">
+   <joint name=" ${child}_joint" type= "${type}" >
+   <parent link="base_link"/>
+   <child link="${child}"/>
+   <origin xyz="${xyz}" rpy="${rpy}"/>
+   </joint>
+</xacro:macro>
+
+<xacro:bjoint type="fixed" child="down_box" xyz="0.105 0 -0.07" rpy="0 0 0"/>
+<xacro:bjoint type="fixed" child="upper_surface" xyz="0 0 0.05" rpy="0 0 0"/>
+<xacro:bjoint type="fixed" child="front_surface" xyz="0.205 0 -0.03" rpy="0 0 0"/>
+<xacro:bjoint type="fixed" child="back_surface" xyz="-0.205 0 0" rpy="0 0 0"/>
+
+<!--Cylinder_links (front_wheels & base_for_back_wheels)     ojo:falta la mass!-->
+
+<xacro:macro name="robot_cylinder" params="name length radius rpy material inertial_mass rgba gazebo_color">
+<link name="${name}">
+        <visual>
+         <origin xyz="0 0 0"  rpy="${rpy}" />
+         <geometry>
+                 <cylinder length="${length}" radius="${radius}"/>
+         </geometry>
+         <material name="${material}" >
+          <color rgba="${rgba}" />
+         </material>
+
+        </visual>
+        <collision>
+            <origin xyz="0 0 0"  rpy="${rpy}" />
+            <geometry>
+                 <cylinder length="${length}" radius="${radius}"/>
+        </geometry>
+        </collision>
+    <inertial>
+   <mass value="${inertial_mass}" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+                 iyy="0.001" iyz="0.0" 
+                 izz="0.001" />
+</inertial>
+ </link>
+
+  <gazebo reference="${name}">
+   <material value="${gazebo_color}"/>
+   <mu1>1.0</mu1>
+   <mu2>1.0</mu2>
+   <kp>1000000.0</kp>
+   <kd>100.0</kd>
+   <minDepth>0.001</minDepth>
+   <maxVel>1.0</maxVel>
+  </gazebo>
+</xacro:macro>
+
+<xacro:robot_cylinder name="left_front_wheel"  length="0.0450" radius="0.09" rpy="1.57 0 0" material="blackish" inertial_mass="3"
+ rgba="0.2 0.2 0.2 1" gazebo_color="Gazebo/FlatBlack"/>
+<xacro:robot_cylinder name="right_front_wheel" length="0.0450" radius="0.09"  rpy="1.57 0 0" material="blackish" inertial_mass="3" 
+ rgba="0.2 0.2 0.2 1" gazebo_color="Gazebo/FlatBlack"/>
+<xacro:robot_cylinder name="back_left_wheel_base" length="0.04" radius="0.035" rpy="0 0 0" material="grey" inertial_mass="0.35"
+ rgba="0.5 0.5 0.5 1" gazebo_color="Gazebo/Grey"/>
+<xacro:robot_cylinder name="back_right_wheel_base" length="0.04" radius="0.035" rpy="0 0 0" material="grey" inertial_mass="0.35"
+ rgba="0.5 0.5 0.5 1" gazebo_color="Gazebo/Grey"/>
+
+<!-- Cylinder_joints -->
+
+<xacro:macro name="cjoint" params="axis type parent child xyz rpy">
+   <joint name="${child}_joint" type= "${type}" >
+   <parent link="${parent}"/>
+   <child link="${child}"/>
+   <axis xyz="${axis}"/>
+   <origin xyz="${xyz}" rpy="${rpy}" />
+   <limit effort="100" velocity="100"/>
+   <joint_properties damping="0.0" friction="0.0"/>
+ </joint>
+</xacro:macro>
+
+<xacro:cjoint axis="0 1 0" type="continuous" parent="down_box" child="left_front_wheel" xyz="0 0.17 0.01" rpy="0 0 0"/>
+<xacro:cjoint axis="0 1 0" type="continuous" parent="down_box" child="right_front_wheel" xyz="0 -0.17 0.01" rpy="0 0 0"/>
+<xacro:cjoint axis="0 0 0" type="fixed" parent="base_link" child="back_left_wheel_base" xyz="-0.1405 0.11 -0.06" rpy="0 0 0"/>
+<xacro:cjoint axis="0 0 0" type="fixed" parent="base_link" child="back_right_wheel_base" xyz="-0.1405 -0.11 -0.06" rpy="0 0 0"/>
+
+<!-- Sphere_Links (Back_wheels) -->
+
+
+<xacro:macro name="robot_sphere" params="name radius xyz rpy">
+    <link name="${name}">
+        <visual>
+            <geometry>
+                 <sphere radius="${radius}"/>
+            </geometry>
+            <material name="white" >
+                 <color rgba="1 1 1 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="${xyz}"  rpy="${rpy}" />
+            <geometry>
+                 <sphere radius="${radius}"/>
+        </geometry>
+        </collision>
+    <inertial>
+        <mass value="2" />
+        <origin xyz="0 0 0" />
+        <inertia ixx="0.000000001" ixy="0.0" ixz="0.0"
+                 iyy="0.000000001" iyz="0.0" 
+                 izz="0.000000001" />
+      </inertial>
+</link>
+ <!-- friction parameters -->
+  <gazebo reference="${name}">
+    <mu1>1.0</mu1>
+    <mu2>1.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
+    <maxVel>1.0</maxVel>
+    <material value="Gazebo/GreyTransparent"/>
+  </gazebo>
+</xacro:macro>
+
+
+<xacro:robot_sphere name="left_back_wheel" radius="0.035" xyz="0 0 0" rpy="0 0 0"/>
+<xacro:robot_sphere name="right_back_wheel" radius="0.035" xyz="0 0 0" rpy="0 0 0" />
+
+<!-- Sphere_joints -->
+
+<xacro:macro name="sjoint" params="axis type parent child xyz rpy">
+   <axis xyz="${axis}"/>
+   <joint name="${child}_joint" type= "${type}" >
+   <parent link="${parent}"/>
+   <child link="${child}"/>
+   <origin xyz="${xyz}" rpy="${rpy}" />
+   <limit effort="100" velocity="100"/>
+   <joint_properties damping="0.0" friction="0.0"/>
+ </joint>
+</xacro:macro>
+
+<xacro:sjoint axis="0 1 0" type="fixed" parent="back_left_wheel_base" child="left_back_wheel" xyz="0 0 -0.0525" 
+rpy="0 0 0"/>
+
+<xacro:sjoint axis="0 1 0" type="fixed" parent="back_right_wheel_base" child="right_back_wheel" xyz="0 0 -0.0525"
+rpy="0 0 0" />
+
+<gazebo>
+    <plugin name="robot_description" filename="libgazebo_ros_diffdrive_uos.so">
+      <alwaysOn>true</alwaysOn>
+      <cmd_vel_topic_name>cmd_vel</cmd_vel_topic_name>
+      <odom_topic_name>odom</odom_topic_name>
+      <joint_states_topic_name>joint_states</joint_states_topic_name>
+      <left_front_wheel_joint>left_front_wheel_joint</left_front_wheel_joint>
+      <!--left_rear_wheel_joint>left_front_wheel_joint</left_rear_wheel_joint-->
+      <right_front_wheel_joint>right_front_wheel_joint</right_front_wheel_joint>
+      <!--right_rear_wheel_joint>right_front_wheel_joint</right_rear_wheel_joint-->
+      <wheel_separation>0.30</wheel_separation>
+      <wheel_diameter>0.18</wheel_diameter>
+      <turning_adaptation>0.95</turning_adaptation>
+      <torque>4.0</torque>
+      <max_velocity>0.9</max_velocity>
+      <updateRate>40.0</updateRate>
+    </plugin>
+  </gazebo>
+
+  <!-- publish ground truth for pose of base_footprint -->
+
+<gazebo>
+    <plugin name="base_footprint_controller" filename="libgazebo_ros_p3d.so">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>30.0</updateRate>
+      <bodyName>base_footprint</bodyName>
+      <topicName>base_footprint_pose_ground_truth</topicName>
+      <gaussianNoise>0.0</gaussianNoise>
+      <frameName>map</frameName>
+      <interface:position name="base_footprint_p3d_position_iface" />
+    </plugin>
+  </gazebo>
+</robot>
+

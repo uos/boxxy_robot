@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="gui" default="true"/>
+
+ <include file="$(find muffin_worlds)/launch/muffin_collada_world.launch" />
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find boxxy_description)/urdf/boxxy_description.urdf.xacro'" />
+
+  <node name="spawn_volksbot_model" pkg="gazebo_ros" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -param robot_description -model volksbot" respawn="false" output="screen"/>
+
+  <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf" output="screen">
+    <param name="freq" value="100.0"/>
+    <param name="sensor_timeout" value="1.0"/>
+    <param name="publish_tf" value="true"/>
+    <param name="odom_used" value="true"/>
+    <param name="imu_used" value="true"/>
+    <param name="vo_used" value="false"/>
+    <remap from="imu_data" to="imu/data"/>
+  </node>
+
+  <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher"/>
+  
+    <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
+    <rosparam command="load" file="$(find testbot_description)/config/laser_self_filter.yaml"/>
+  </node>
+  
+   <node name="default_loaded_controllers_spawner"
+    pkg="controller_manager" type="spawner" output="screen" respawn="false"
+    args="joint_state_controller" />
+  
+</launch>
