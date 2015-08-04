@@ -24,7 +24,7 @@
   <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher"/>
   
     <node pkg="laser_filters" type="scan_to_scan_filter_chain" name="laser_filter">
-    <rosparam command="load" file="$(find testbot_description)/config/laser_self_filter.yaml"/>
+    <rosparam command="load" file="$(find boxxy_description)/config/laser_self_filter.yaml"/>
   </node>
   
    <node name="default_loaded_controllers_spawner"
