@@ -113,7 +113,7 @@
 
 <!--_______________________________________________end_______________________________________________-->
 
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(find boxxy_description)/urdf/boxxy_description.urdf.xacro'" />
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find boxxy_description)/urdf/robot_description.urdf.xacro'" />
 
   <node name="spawn_volksbot_model" pkg="gazebo_ros" type="spawn_model" args="$(optenv ROBOT_INITIAL_POSE) -unpause -urdf -param robot_description -model volksbot" respawn="false" output="screen"/>
 
