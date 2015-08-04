@@ -5,7 +5,6 @@
    <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="$(find uos_gazebo_worlds)/worlds/avz_collada.world"/>
   </include>
-  
 
   <param name="robot_description" command="$(find xacro)/xacro.py '$(find boxxy_description)/urdf/robot_description.urdf.xacro'" />
 
