@@ -224,10 +224,10 @@
  </joint>
 </xacro:macro>
 
-<xacro:sjoint axis="0 1 0" type="fixed" parent="back_left_wheel_base" child="left_back_wheel" xyz="0 0 -0.0525" 
+<xacro:sjoint axis="0 1 0" type="continuous" parent="back_left_wheel_base" child="left_back_wheel" xyz="0 0 -0.0525" 
 rpy="0 0 0"/>
 
-<xacro:sjoint axis="0 1 0" type="fixed" parent="back_right_wheel_base" child="right_back_wheel" xyz="0 0 -0.0525"
+<xacro:sjoint axis="0 1 0" type="continuous" parent="back_right_wheel_base" child="right_back_wheel" xyz="0 0 -0.0525"
 rpy="0 0 0" />
 
 <gazebo>
